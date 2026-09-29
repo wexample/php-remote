@@ -1,0 +1,7 @@
+domain: php-remote.wex
+global:
+  name: php-remote
+  type: php-package
+  version: 1.0.0
+wex:
+  version: 6.0.136
