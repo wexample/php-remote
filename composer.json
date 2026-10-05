@@ -3,7 +3,7 @@
   "description": "Registry, health checks and php-api client building for the external services a PHP app talks to",
   "type": "library",
   "license": "MIT",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "autoload": {
     "psr-4": {
       "Wexample\\PhpRemote\\": "src/"
