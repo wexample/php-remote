@@ -13,27 +13,30 @@ class RemoteRegistry
     /**
      * @var array<string, RemoteInterface>
      */
-    private array $remotes = [];
+    private readonly array $remotes;
 
     /**
      * @param iterable<RemoteInterface> $remotes
      */
     public function __construct(iterable $remotes)
     {
+        $byKey = [];
         foreach ($remotes as $remote) {
             $key = $remote->getKey();
 
-            if (isset($this->remotes[$key])) {
+            if (isset($byKey[$key])) {
                 throw new LogicException(sprintf(
                     'Two remotes share the key "%s": %s and %s.',
                     $key,
-                    $this->remotes[$key]::class,
+                    $byKey[$key]::class,
                     $remote::class
                 ));
             }
 
-            $this->remotes[$key] = $remote;
+            $byKey[$key] = $remote;
         }
+
+        $this->remotes = $byKey;
     }
 
     /**
