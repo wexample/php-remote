@@ -23,7 +23,7 @@ class RemoteGuardTest extends TestCase
 
     public function testAFailingRemoteGivesTheFallbackAndIsLogged(): void
     {
-        $logger = new class extends AbstractLogger {
+        $logger = new class () extends AbstractLogger {
             /** @var list<array{string, string, array<string, mixed>}> */
             public array $records = [];
 
