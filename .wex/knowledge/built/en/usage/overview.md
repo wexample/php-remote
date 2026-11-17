@@ -48,3 +48,15 @@ $remote = new ApiClientRemote($definition, $client);
 The class must keep the constructor of php-api's `Client`. An empty header is left out. The remote reads `Unconfigured` while the base URL, or a required key, is empty; otherwise its check requests the client's `PING_PATH`.
 
 `$rateLimiter` is optional: any `RateLimiterInterface`, whose `acquire()` returns once a request may go. Backing it with a store shared by every process of the app is the framework's part.
+
+## A call that may fail
+
+A remote can stop answering, or change its format, at any time. Where the app can do without what it would have given — an import going on with the next item, a page rendered without a block —, run the call through the guard:
+
+```php
+$guard = new RemoteGuard($logger);   // any PSR-3 logger, or none
+
+$points = $guard->attempt($senat, fn () => $senat->fetchReport($day), []);
+```
+
+Any `Exception` the call raises is logged as a warning under the remote's key and the fallback is returned. A `LogicException` or an `Error` is the app's own bug and goes through. A remote reports an answer it can no longer read with `RemoteException`, which carries its key.

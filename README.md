@@ -1,6 +1,6 @@
 # php-remote
 
-Version: 2.0.2
+Version: 3.0.0
 
 Registry, health checks and php-api client building for the external services a PHP app talks to
 
