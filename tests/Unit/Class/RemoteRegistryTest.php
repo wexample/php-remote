@@ -7,9 +7,12 @@ namespace Wexample\PhpRemote\Tests\Unit\Class;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use Wexample\PhpRemote\Class\RemoteRegistry;
+use Wexample\PhpRemote\Class\RemoteReporter;
+use Wexample\PhpRemote\Enum\RemoteSignalKind;
 use Wexample\PhpRemote\Enum\RemoteState;
 use Wexample\PhpRemote\Tests\Fixtures\Remote\BrokenRemote;
 use Wexample\PhpRemote\Tests\Fixtures\Remote\ReachableRemote;
+use Wexample\PhpRemote\Tests\Fixtures\Reporter\RecordingDispatcher;
 
 class RemoteRegistryTest extends TestCase
 {
@@ -50,5 +53,15 @@ class RemoteRegistryTest extends TestCase
         $this->expectExceptionMessage('Registered: reachable.');
 
         (new RemoteRegistry([new ReachableRemote()]))->get('missing');
+    }
+
+    public function testAChecksStateIsSignalled(): void
+    {
+        $dispatcher = new RecordingDispatcher();
+        (new RemoteRegistry([new BrokenRemote(), new ReachableRemote()], new RemoteReporter($dispatcher)))->checkAll();
+
+        [$down, $up] = $dispatcher->events;
+        $this->assertSame([RemoteSignalKind::Failure, 'broken', RemoteRegistry::CODE_DOWN, 'Connection refused'], [$down->kind, $down->remoteKey, $down->code, $down->message]);
+        $this->assertSame([RemoteSignalKind::Recovery, 'reachable', RemoteRegistry::CODE_DOWN], [$up->kind, $up->remoteKey, $up->code]);
     }
 }
