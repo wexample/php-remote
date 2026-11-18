@@ -6,7 +6,11 @@ Everything lives under `Wexample\PhpRemote\` (PSR-4 on `src/`): `Interface/` the
 
 src/Interface/RemoteInterface.php is the whole contract: a key, a label, `checkStatus()`. src/Class/RemoteRegistry.php takes any iterable of remotes, indexes them by key — two remotes sharing a key throw — and checks them. `check()` wraps the remote's own check: it measures the latency with `hrtime()` and turns any `Throwable` into `RemoteStatus::down($message)`, because a status page must survive the one remote that breaks. That is the only place the package catches everything.
 
-src/Class/RemoteGuard.php is the other place: `attempt()` runs a call to a remote and, when it raises an `Exception`, logs it under the remote's key (PSR-3, optional) and returns the caller's fallback. It lets a `LogicException` through, and every `Error`: those are bugs of the app, not failures of the outside. src/Exception/RemoteException.php is what a remote raises for an answer it cannot use — an error status, a format it no longer reads —, its key with it.
+src/Class/RemoteGuard.php is the other place: `attempt()` runs a call to a remote and, when it raises an `Exception`, reports it and returns the caller's fallback. It lets a `LogicException` through, and every `Error`: those are bugs of the app, not failures of the outside. src/Exception/RemoteException.php is what a remote raises for an answer it cannot use — an error status, a format it no longer reads —, its key with it.
+
+### Signals
+
+src/Class/RemoteSignal.php is the one shape of what a remote tells: a key, a src/Enum/RemoteSignalKind.php, a code, a message, a context, a fingerprint. src/Class/RemoteReporter.php sends it: dispatched as is through a PSR-14 dispatcher — the signal is the event, so listeners subscribe to its class — and logged through PSR-3, a recovery excepted. Both are optional, so a remote reports whatever the app listens to. The guard reports `call_failed` and its recovery; the registry, `down` and its recovery, from each check.
 
 src/Class/RemoteStatus.php is a readonly value: a src/Enum/RemoteState.php (`Up`, `Down`, `Unconfigured`), a message, the latency in milliseconds and the check date.
 
